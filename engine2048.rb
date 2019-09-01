@@ -1,3 +1,4 @@
+require 'rubygems'
 
 
 #shifts right for internal nils too.  like after numbers get added together and nil spot is created
@@ -134,12 +135,17 @@ end
 
 
 def getTwoOrFour()
-    x = rand(0..1)
-    if x == 0
-        return 2
-    elsif x == 1
-        return 4
-    end
+    # x = rand(0..1)
+    # # var value = Math.random() < 0.9 ? 2 : 4;
+
+    # if x == 0
+    #     return 2
+    # elsif x == 1
+    #     return 4
+    # end
+
+    #https://gaming.stackexchange.com/questions/170665/what-is-the-probability-of-4
+    return rand() < 0.9 ? 2 : 4
 end
 
 def placeNewTile(board)
@@ -312,17 +318,25 @@ def getBestMove(board, i)
 
     # maxTurns = 4
 
+    numNils = countNils(board)
 
-    if i < 275
+
+    if i < 200
         maxTurns = 2
-    elsif i < 500
+    elsif i < 300
         maxTurns = 3
-    elsif i < 600
-        maxTurns = 4   
-    else
+    elsif i < 400
+        maxTurns = 4
+    elsif i < 500
         maxTurns = 5
+    else
+        maxTurns = 7
     end
     nilsSoFar = []
+
+    if numNils <=3 && i > 550
+        maxTurns = 8
+    end
 
 
     newB = swipeRight(b)
@@ -363,4 +377,39 @@ def getBestMove(board, i)
     bestNilsResult = getBestNilsResult(nilsRight, nilsDown, nilsLeft, nilsUp)
 
     return bestNilsResult.direction
+end
+
+def contains(b, n)
+    
+    for r in 0..3 do
+        for c in 0..3 do
+            v = b[r][c]
+            if v == n 
+                return true
+            end
+        end
+    end
+    return false
+end
+    
+
+def superBestMove(i, board)
+    arr = [ 
+        # getBestMove(board, i),
+            getBestMove(board, i),
+            getBestMove(board, i)]
+
+    numNils = countNils(board)
+    
+    if arr[0] == arr[1] && numNils >= 3
+        return arr[0]
+    else
+        arr.push(getBestMove(board, i))
+        arr.push(getBestMove(board, i))
+        arr.push(getBestMove(board, i))
+    end
+
+    freq = arr.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
+    bestDirection = arr.max_by { |v| freq[v] }
+    return bestDirection
 end

@@ -1,4 +1,6 @@
-# puts "hi"
+# require "engine2048"
+
+
 
 
 
@@ -103,8 +105,11 @@ def swipeBoard(direction, board)
 end
 
 def display(board)
-    puts '---------------'
+    puts '-----------------------'
     for r in 0..3 do
+        if r > 0 
+            puts ''
+        end
         for c in 0..3 do
             v = board[r][c]
             if v == nil
@@ -115,9 +120,8 @@ def display(board)
             print ' '
         end
         puts ''
-        puts ''
     end   
-    puts '---------------'
+    puts '-----------------------'
 end 
 
 
@@ -315,14 +319,18 @@ def getBestMove(board, i)
     # maxTurns = 4
 
 
-    if i < 275
-        maxTurns = 2
+    if i < 200
+        maxTurns = 1
+    # elsif i < 350
+    #     maxTurns = 3
+    elsif i < 400
+        maxTurns = 4
     elsif i < 500
-        maxTurns = 3
-    elsif i < 600
-        maxTurns = 4   
-    else
         maxTurns = 5
+    elsif i < 600
+        maxTurns = 6   
+    else
+        maxTurns = 6
     end
     nilsSoFar = []
 
@@ -367,8 +375,172 @@ def getBestMove(board, i)
     return bestNilsResult.direction
 end
 
+
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+def waitForChangeOld(s0, driver)
+
+    puts '---- before'
+    puts s0
+    puts '---'
+    # wait for page to change
+    count = 0
+    while s0 == driver.find_element(class: "tile-container").text do #driver.page_source driver.page_source do 
+        # s0 = driver.page_source
+        count += 1
+        sleep(0.05)
+        if count > 3
+            sleep(3)
+        end
+        puts '---- during'
+        puts s0
+        puts '---'
+    end
+
+    puts '---- after'  
+    puts s0
+    puts '---'
+end
+
+
+def waitForChangeOld2(b0, driver)
+
+    puts '---- before'
+    puts b0
+    # wait for page to change
+    sleep(0.05)
+    count = 0
+    while b0 == getBoard(driver) do
+        count += 1
+        sleep(0.05)
+        if count > 3
+            sleep(3)
+        end
+        puts '---- same'
+    end
+    # b == getBoard(driver)
+    puts '---- after'  
+    puts display(getBoard(driver))
+    puts '---'
+end
+
+
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+
+require "selenium-webdriver" # load in the webdriver gem to interact with Selenium
+
+# create a driver object.
+# This is what you will actually interact with to do things within the automated 
+driver = Selenium::WebDriver.for :chrome
+
+# open CrossBrowserTesting.com inside Chrome
+driver.navigate.to "http://2048game.com/" 
+
+
+def getTileClass(r, c)
+    return "tile-position-" + c.to_s + "-" + r.to_s
+end
+
+def getBoard(driver)
+    b = Array.new(4) { Array.new(4)}
+
+    # b = [   [1, 2, nil, 4], 
+    #         [2, 2, nil, 4], 
+    #         [1, 1, nil, 1], 
+    #         [nil,nil,nil,nil], 
+    #         [2, 2, nil, nil]]
+
+    for r in 0..3 do
+        for c in 0..3 do 
+            v = nil
+            begin
+                # v = driver.find_elements(class: getTileClass(r+1, c+1)).text
+                list = driver.find_elements(class: getTileClass(r+1, c+1))
+                v = list[list.length - 1].text
+                # puts v
+                b[r][c] = v
+            rescue
+                # print ''
+            end
+        end
+    end
+    return b
+end
+                
+
+def uiSwipe(d, driver)
+
+    if d == 'up'
+        driver.find_element(:css, 'body').send_keys :arrow_up
+    end
+    if d == 'down'
+        driver.find_element(:css, 'body').send_keys :arrow_down
+    end
+    if d == 'left'
+        driver.find_element(:css, 'body').send_keys :arrow_left
+    end
+    if d == 'right'
+        driver.find_element(:css, 'body').send_keys :arrow_right
+    end
+end
+
+    
+
+def makeSureBoardIsStill(driver)
+    s0 = driver.page_source
+
+    sleep(0.05)
+    while driver.page_source != s0 do
+        s0 = driver.page_source
+        sleep(0.05)
+    end
+    # return s0
+end
+
+
+def waitForChange(s0, driver)
+
+    puts '---- before'
+    puts s0
+    # wait for page to change
+    sleep(0.01)
+    count = 0
+    while s0 == driver.find_element(class: "tile-container").attribute("innerHTML") do
+        count += 1
+        sleep(0.01 * count * count)
+        # end
+        puts '--------- looping ' + count.to_s
+        display(getBoard(driver))
+    end
+    # b == getBoard(driver)
+    puts '---- after'  
+    puts driver.find_element(class: "tile-container").attribute("innerHTML")
+    puts '---'
+end
+
+# driver.find_element(class: "tile-container").attribute("innerHTML")
+# driver.find_element(class: "tile-container").text
+
+# sleep(3)
+b = getBoard(driver)
+display(b)
+
+
 def superBestMove(i, board)
     arr = [getBestMove(board, i),
+        getBestMove(board, i),
+        getBestMove(board, i),
         getBestMove(board, i),
         getBestMove(board, i),
         getBestMove(board, i),
@@ -381,61 +553,33 @@ def superBestMove(i, board)
     return bestDirection
 end
 
-require 'ostruct'
-
-# person = OpenStruct.new
-
-
-# board = Array.new(4) { Array.new(4)}
-
-# board = placeNewTile(board)
-# puts "new tile:        /_------------"
-# display(board)
-# puts "swipe right:"
-# display(swipeRight(board))
-# puts countNils(swipeRight(board))
-# puts "swipe down:"
-# display(swipeDown(board))
-# puts countNils(swipeDown(board))
-# puts "swipe left:"
-# display(swipeLeft(board))
-# puts countNils(swipeLeft(board))
-# puts "swipe up:"
-# display(swipeUp(board))
-# puts countNils(swipeUp(board))
-
-# puts '=================================================='
-# display(board)
-
-# puts ''
-# bestDirection = getBestMove(board)
-# puts bestDirection
-# board = swipeBoard(bestDirection, board)
-# board = placeNewTile(board)
-# display(board)
-
-board = [   [1, 2, nil, 4], 
-            [2, 2, nil, 4], 
-            [1, 1, nil, 1], 
-            # [nil,nil,nil,nil], 
-            [2, 2, nil, nil]]
-display(board)
-
-
-
-
-for i in 0..1000 do
-   bestDirection = superBestMove(i, board)
-
-    
-    puts i.to_s + '. ' + bestDirection
-    board = swipeBoard(bestDirection, board)
-    board = placeNewTile(board)
-    display(board)
+for i in 0..1000 do 
+    direction = superBestMove(i, b)
+    puts i.to_s + ") best move: " + direction
+    preSource = driver.find_element(class: "tile-container").attribute("innerHTML")
+    puts '---- before'
+    puts preSource
+    # puts 1
+    puts '----'
+    puts 'about to swipe ' + direction
+    uiSwipe(direction, driver)
+    puts 2
+    waitForChange(preSource, driver)
+    puts 3 
+    # makeSureBoardIsStill(driver)
+    puts 4
+    b = getBoard(driver)
+    display(b)
 end
 
-# display(board)
+# puts b 
+# print b
+# puts ''
+
+display(b)
+
+
+driver.quit
 
 
 
-# print shiftRight([1, 1, 1, nil])

@@ -14,7 +14,7 @@ display(b)
 twos = 0
 fours = 0
 
-for i in 0..1000 do 
+for i in 0..10000000 do 
     b0 = b.dup
     direction = superBestMove(i, b)
     puts i.to_s + ") best move: " + direction
